@@ -309,8 +309,26 @@
   .lightbox .lb-close:hover{border-color:var(--copper-bright);color:var(--copper-bright);}
 
   /* ---------- ABOUT ---------- */
-  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+  .about-grid{display:grid;grid-template-columns:240px 1fr 1fr;gap:40px;align-items:start;}
   .about-grid p{color:var(--silk-dim);font-size:15.5px;margin:0 0 14px;}
+  .about-photo-wrap{position:relative;}
+  .about-photo{
+    width:100%;
+    aspect-ratio:3/4;
+    object-fit:cover;
+    border-radius:8px;
+    border:1px solid var(--mask-line);
+    display:block;
+  }
+  .about-photo-tag{
+    position:absolute;bottom:10px;left:10px;
+    font-family:var(--mono);font-size:10.5px;
+    background:rgba(8,31,24,0.82);
+    color:var(--copper-bright);
+    padding:4px 9px;border-radius:3px;
+    border:1px solid var(--mask-line);
+    letter-spacing:0.03em;
+  }
   .coursework{
     display:grid;grid-template-columns:1fr 1fr;gap:1px;
     background:var(--mask-line);border:1px solid var(--mask-line);border-radius:6px;overflow:hidden;
@@ -346,6 +364,7 @@
     .navlinks.open{transform:translateY(0);}
     .navtoggle{display:block;}
     .about-grid{grid-template-columns:1fr;}
+    .about-photo-wrap{max-width:260px;}
     .coursework{grid-template-columns:1fr;}
     .contact-box{flex-direction:column;align-items:flex-start;}
   }
@@ -470,7 +489,7 @@
       <div class="project-head">
         <div>
           <span class="designator">U1</span>
-          <h3 class="project-title">2-Watt Stereo Audio Amplifier PCB</h3>
+          <h3 class="project-title">Dual-Channel LM386 Audio Amplifier PCB</h3>
           <p class="project-tagline">CMPE 110 · Full PCB lifecycle, from LTSpice to a soldered board</p>
         </div>
         <div class="tag-row">
@@ -483,7 +502,7 @@
       <div class="project-body">
         <p>Designed, simulated, and manufactured a two-channel audio amplifier PCB built around the LM386 low-voltage op-amp, taking it from a theoretical circuit to a working, soldered board with measured output.</p>
         <table class="spec-table">
-          <tr><td>Role</td><td>Circuit design, schematic capture, layout, and assembly (team of 3, with Alex Chavez and Zemarai Rokai)</td></tr>
+          <tr><td>Role</td><td>Circuit design, schematic capture, layout, and assembly (team of 3)</td></tr>
           <tr><td>Stack</td><td>LTSpice simulation → KiCad schematic capture → footprint assignment → PCB layout &amp; routing → Gerber/BOM export</td></tr>
           <tr><td>Verification</td><td>Electrical Rules Check (0 errors/warnings), Gerber viewer inspection, oscilloscope waveform capture at 15/20/25 kHz</td></tr>
         </table>
@@ -730,6 +749,10 @@
       <h2 class="sec-title">About</h2>
     </div>
     <div class="about-grid">
+      <div class="about-photo-wrap">
+        <img src="images/about/profile.jpg" alt="Oscar Arroyo holding a soldered PCB in the SJSU computer engineering lab" class="about-photo">
+        <span class="about-photo-tag">SJSU Lab</span>
+      </div>
       <div>
         <p>I'm a Computer Engineering student at San José State University, focused on the hardware side of the stack — FPGA development, embedded systems, and PCB design. I like projects that don't stop at a schematic: simulating in LTSpice, writing the RTL, and following it all the way to a board I've routed, fabricated, and soldered myself.</p>
         <p>Outside coursework, I'm building toward hardware engineering internships — currently deepening my RTL skills with structured Basys 3 projects and learning KiCad PCB design from the ground up through a sensor-board build.</p>
