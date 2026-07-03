@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscar Arroyo — Hardware Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#0b2f24;
+    --board-deep:#081f18;
+    --board-raised:#0f3d2e;
+    --copper:#c9834a;
+    --copper-bright:#e0a15f;
+    --silk:#eef1e6;
+    --silk-dim:#a9beb2;
+    --mask-line:rgba(238,241,230,0.14);
+    --pad:#d9c19a;
+    --danger:#d9704f;
+    --ok:#7fbf9e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--board-deep);
+    color:var(--silk);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--copper);color:var(--board-deep);}
+
+  /* subtle board texture */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(238,241,230,0.045) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+
+  /* ---------- NAV ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(8,31,24,0.88);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--mask-line);
+  }
+  nav.wrap{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;
+  }
+  .brand{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:0.02em;
+    display:flex;align-items:center;gap:10px;
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--copper-bright);
+    box-shadow:0 0 8px var(--copper-bright);
+    flex-shrink:0;
+  }
+  .navlinks{display:flex;gap:28px;font-family:var(--mono);font-size:13px;letter-spacing:0.03em;text-transform:uppercase;}
+  .navlinks a{text-decoration:none;color:var(--silk-dim);transition:color .2s;position:relative;}
+  .navlinks a:hover{color:var(--copper-bright);}
+  .navtoggle{display:none;background:none;border:1px solid var(--mask-line);color:var(--silk);width:38px;height:38px;border-radius:4px;font-family:var(--mono);cursor:pointer;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:96px 0 80px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .wrap{display:grid;grid-template-columns:1.15fr 0.85fr;gap:48px;align-items:center;}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--copper-bright);
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    margin:0 0 18px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--copper-bright);}
+  h1{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:clamp(34px,5vw,54px);
+    line-height:1.08;
+    margin:0 0 20px;
+    color:var(--silk);
+  }
+  h1 span{color:var(--copper-bright);}
+  .hero-sub{
+    font-size:17px;
+    color:var(--silk-dim);
+    max-width:52ch;
+    margin:0 0 32px;
+  }
+  .hero-sub b{color:var(--silk);font-weight:600;}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .btn{
+    font-family:var(--mono);
+    font-size:13.5px;
+    letter-spacing:0.03em;
+    padding:13px 22px;
+    border-radius:3px;
+    text-decoration:none;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .15s, box-shadow .15s;
+    border:1px solid transparent;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--copper);color:var(--board-deep);font-weight:600;}
+  .btn-primary:hover{box-shadow:0 6px 20px rgba(201,131,74,0.35);}
+  .btn-ghost{border-color:var(--mask-line);color:var(--silk);}
+  .btn-ghost:hover{border-color:var(--copper-bright);color:var(--copper-bright);}
+
+  /* schematic node diagram */
+  .schematic{
+    position:relative;
+    aspect-ratio:1/1;
+    max-width:340px;
+    margin:0 auto;
+  }
+  .schematic svg{width:100%;height:100%;display:block;}
+  .sch-line{
+    stroke:var(--copper);
+    stroke-width:1.5;
+    fill:none;
+    stroke-dasharray:6 5;
+    opacity:0.65;
+    animation:dash 22s linear infinite;
+  }
+  @keyframes dash{to{stroke-dashoffset:-500;}}
+  .sch-node-bg{fill:var(--board-raised);stroke:var(--mask-line);stroke-width:1;}
+  .sch-node-ring{fill:none;stroke:var(--copper-bright);stroke-width:1.5;}
+  .sch-pad{fill:var(--pad);}
+  .sch-label{font-family:var(--mono);font-size:9.5px;fill:var(--silk-dim);letter-spacing:.02em;}
+  .sch-label-main{font-family:var(--mono);font-size:10.5px;fill:var(--copper-bright);font-weight:600;}
+
+  /* ---------- SECTION HEADERS ---------- */
+  section{padding:76px 0;position:relative;}
+  .sec-head{margin-bottom:44px;}
+  .sec-tag{
+    font-family:var(--mono);font-size:12px;color:var(--silk-dim);
+    letter-spacing:0.14em;text-transform:uppercase;margin:0 0 10px;
+  }
+  .sec-title{font-size:clamp(24px,3.4vw,32px);font-weight:700;margin:0;color:var(--silk);}
+  .divider{height:1px;background:var(--mask-line);border:none;margin:0;}
+
+  /* ---------- SKILLS ---------- */
+  .skills-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:1px;
+    background:var(--mask-line);
+    border:1px solid var(--mask-line);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .skill-card{
+    background:var(--board);
+    padding:24px 22px;
+  }
+  .skill-card h3{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--copper-bright);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin:0 0 14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .skill-card h3::before{content:"";width:6px;height:6px;background:var(--copper-bright);border-radius:1px;transform:rotate(45deg);}
+  .skill-card ul{margin:0;padding:0;list-style:none;}
+  .skill-card li{
+    font-size:14.5px;color:var(--silk-dim);
+    padding:5px 0;
+    border-bottom:1px dashed rgba(238,241,230,0.08);
+  }
+  .skill-card li:last-child{border-bottom:none;}
+
+  /* ---------- PROJECTS ---------- */
+  .project{
+    background:var(--board);
+    border:1px solid var(--mask-line);
+    border-radius:8px;
+    margin-bottom:28px;
+    overflow:hidden;
+  }
+  .project-head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:20px;padding:28px 30px 20px;
+    flex-wrap:wrap;
+  }
+  .designator{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--board-deep);
+    background:var(--copper-bright);
+    padding:3px 9px;
+    border-radius:3px;
+    font-weight:700;
+    letter-spacing:0.04em;
+  }
+  .project-title{font-size:21px;font-weight:700;margin:12px 0 6px;color:var(--silk);}
+  .project-tagline{color:var(--silk-dim);font-size:14.5px;margin:0;}
+  .tag-row{display:flex;gap:8px;flex-wrap:wrap;max-width:340px;justify-content:flex-end;}
+  .tag{
+    font-family:var(--mono);font-size:11px;color:var(--silk-dim);
+    border:1px solid var(--mask-line);padding:4px 9px;border-radius:20px;
+  }
+  .project-body{padding:4px 30px 30px;}
+  .project-body p{color:var(--silk-dim);font-size:15px;margin:0 0 14px;}
+  .project-body strong{color:var(--silk);}
+  .spec-table{
+    width:100%;border-collapse:collapse;margin:18px 0 20px;
+    font-size:13.5px;
+  }
+  .spec-table tr{border-bottom:1px solid var(--mask-line);}
+  .spec-table tr:last-child{border-bottom:none;}
+  .spec-table td{padding:9px 4px;color:var(--silk-dim);}
+  .spec-table td:first-child{
+    font-family:var(--mono);color:var(--silk);
+    width:38%;font-size:12px;text-transform:uppercase;letter-spacing:0.04em;
+  }
+  .outcome-strip{
+    display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;
+  }
+  .outcome-pill{
+    font-family:var(--mono);font-size:12px;
+    padding:8px 14px;border-radius:4px;
+    background:rgba(127,191,158,0.1);
+    color:var(--ok);border:1px solid rgba(127,191,158,0.25);
+  }
+  .outcome-pill.warn{
+    background:rgba(217,112,79,0.1);color:var(--danger);border-color:rgba(217,112,79,0.25);
+  }
+  .toggle-btn{
+    font-family:var(--mono);font-size:12.5px;color:var(--copper-bright);
+    background:none;border:none;cursor:pointer;padding:0;
+    display:flex;align-items:center;gap:6px;margin-top:6px;
+  }
+  .toggle-btn::after{content:"+";font-size:16px;transition:transform .2s;}
+  .toggle-btn.open::after{transform:rotate(45deg);}
+  .details{display:none;margin-top:16px;padding-top:16px;border-top:1px dashed var(--mask-line);}
+  .details.open{display:block;}
+  .details h4{font-family:var(--mono);font-size:12px;color:var(--silk);text-transform:uppercase;letter-spacing:0.06em;margin:16px 0 8px;}
+  .details h4:first-child{margin-top:0;}
+  .details ul{margin:0;padding-left:18px;color:var(--silk-dim);font-size:14.5px;}
+  .details li{margin-bottom:6px;}
+
+  /* ---------- IMAGE GALLERY ---------- */
+  .gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:10px;
+    margin-top:18px;
+  }
+  .gallery figure{
+    margin:0;
+    background:var(--board-raised);
+    border:1px solid var(--mask-line);
+    border-radius:5px;
+    overflow:hidden;
+    cursor:zoom-in;
+    transition:border-color .2s, transform .2s;
+  }
+  .gallery figure:hover{border-color:var(--copper-bright);transform:translateY(-2px);}
+  .gallery img{width:100%;height:110px;object-fit:cover;display:block;}
+  .gallery figcaption{
+    font-family:var(--mono);font-size:10.5px;color:var(--silk-dim);
+    padding:7px 9px;letter-spacing:0.01em;
+  }
+  .gallery.gallery-wide img{height:150px;}
+
+  /* lightbox */
+  .lightbox{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(5,15,12,0.92);
+    display:none;
+    align-items:center;justify-content:center;
+    padding:40px 20px;
+    flex-direction:column;
+  }
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:min(900px,92vw);max-height:74vh;border-radius:6px;border:1px solid var(--mask-line);}
+  .lightbox .lb-cap{font-family:var(--mono);color:var(--silk-dim);font-size:13px;margin-top:16px;text-align:center;max-width:640px;}
+  .lightbox .lb-close{
+    position:absolute;top:22px;right:28px;
+    font-family:var(--mono);color:var(--silk);background:none;border:1px solid var(--mask-line);
+    width:38px;height:38px;border-radius:4px;cursor:pointer;font-size:16px;
+  }
+  .lightbox .lb-close:hover{border-color:var(--copper-bright);color:var(--copper-bright);}
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+  .about-grid p{color:var(--silk-dim);font-size:15.5px;margin:0 0 14px;}
+  .coursework{
+    display:grid;grid-template-columns:1fr 1fr;gap:1px;
+    background:var(--mask-line);border:1px solid var(--mask-line);border-radius:6px;overflow:hidden;
+  }
+  .course{background:var(--board);padding:14px 16px;}
+  .course .code{font-family:var(--mono);color:var(--copper-bright);font-size:13px;font-weight:600;}
+  .course .name{font-size:12.5px;color:var(--silk-dim);margin-top:2px;}
+
+  /* ---------- CONTACT ---------- */
+  .contact-box{
+    background:var(--board);
+    border:1px solid var(--mask-line);
+    border-radius:8px;
+    padding:40px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;
+  }
+  .contact-box h2{font-size:22px;margin:0 0 8px;}
+  .contact-box p{color:var(--silk-dim);margin:0;font-size:14.5px;}
+  .contact-links{display:flex;gap:14px;flex-wrap:wrap;}
+
+  footer{padding:32px 0 48px;text-align:center;}
+  footer p{font-family:var(--mono);font-size:12px;color:var(--silk-dim);opacity:0.7;}
+
+  @media(max-width:760px){
+    .hero .wrap{grid-template-columns:1fr;}
+    .schematic{order:-1;max-width:220px;}
+    .navlinks{
+      position:fixed;top:65px;left:0;right:0;
+      background:var(--board-deep);border-bottom:1px solid var(--mask-line);
+      flex-direction:column;padding:20px 28px;gap:18px;
+      transform:translateY(-120%);transition:transform .25s;
+    }
+    .navlinks.open{transform:translateY(0);}
+    .navtoggle{display:block;}
+    .about-grid{grid-template-columns:1fr;}
+    .coursework{grid-template-columns:1fr;}
+    .contact-box{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <div class="brand"><span class="dot"></span>OSCAR ARROYO</div>
+    <button class="navtoggle" id="navToggle" aria-label="Menu">☰</button>
+    <div class="navlinks" id="navLinks">
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Computer Engineering · SJSU</p>
+      <h1>Building things from <span>silicon to schematic.</span></h1>
+      <p class="hero-sub">I'm <b>Oscar Arroyo</b>, a Computer Engineering student focused on hardware design — FPGA development, embedded systems, and PCB layout. I like taking a project from LTSpice simulation, through RTL and schematic capture, to a board I've soldered and tested myself.</p>
+      <div class="cta-row">
+        <a href="#projects" class="btn btn-primary">View Projects →</a>
+        <a href="#contact" class="btn btn-ghost">Get in Touch</a>
+      </div>
+    </div>
+    <div class="schematic">
+      <svg viewBox="0 0 300 300">
+        <path class="sch-line" d="M150,60 L150,120 M150,120 L80,180 M150,120 L220,180 M80,180 L80,230 M220,180 L220,230" />
+        <circle class="sch-node-bg" cx="150" cy="60" r="34"/>
+        <circle class="sch-node-ring" cx="150" cy="60" r="34"/>
+        <text x="150" y="56" text-anchor="middle" class="sch-label-main">RTL</text>
+        <text x="150" y="70" text-anchor="middle" class="sch-label">Verilog / FPGA</text>
+
+        <circle class="sch-node-bg" cx="80" cy="230" r="34"/>
+        <circle class="sch-node-ring" cx="80" cy="230" r="34"/>
+        <text x="80" y="226" text-anchor="middle" class="sch-label-main">PCB</text>
+        <text x="80" y="240" text-anchor="middle" class="sch-label">KiCad / LTSpice</text>
+
+        <circle class="sch-node-bg" cx="220" cy="230" r="34"/>
+        <circle class="sch-node-ring" cx="220" cy="230" r="34"/>
+        <text x="220" y="226" text-anchor="middle" class="sch-label-main">SW</text>
+        <text x="220" y="240" text-anchor="middle" class="sch-label">Full-Stack / QA</text>
+
+        <circle class="sch-pad" cx="150" cy="120" r="3.5"/>
+        <circle class="sch-pad" cx="80" cy="180" r="3.5"/>
+        <circle class="sch-pad" cx="220" cy="180" r="3.5"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="skills">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="sec-tag">// 01 — Toolkit</p>
+      <h2 class="sec-title">Skills &amp; Tools</h2>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <h3>Hardware / RTL</h3>
+        <ul>
+          <li>Verilog / SystemVerilog</li>
+          <li>FSM &amp; FSMD design</li>
+          <li>Basys 3 FPGA (Xilinx Artix-7)</li>
+          <li>Vivado (synthesis, simulation)</li>
+          <li>x86 Assembly (Irvine32)</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h3>PCB Design</h3>
+        <ul>
+          <li>KiCad (schematic + layout)</li>
+          <li>LTSpice simulation</li>
+          <li>Gerber / drill file generation</li>
+          <li>BOM &amp; footprint assignment</li>
+          <li>Through-hole assembly &amp; rework</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h3>Software</h3>
+        <ul>
+          <li>Node.js / Express.js</li>
+          <li>React</li>
+          <li>MongoDB (Mongoose)</li>
+          <li>JWT auth / middleware</li>
+          <li>Git / GitHub / Jira</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h3>Coursework Foundations</h3>
+        <ul>
+          <li>Digital systems &amp; logic design</li>
+          <li>Microprocessor architecture</li>
+          <li>Compiler design (CNF/GNF, DFA)</li>
+          <li>Computer networking</li>
+          <li>PCB manufacturing (CMPE 110)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="projects">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="sec-tag">// 02 — Selected Work</p>
+      <h2 class="sec-title">Projects</h2>
+    </div>
+
+    <!-- PROJECT U1 -->
+    <div class="project">
+      <div class="project-head">
+        <div>
+          <span class="designator">U1</span>
+          <h3 class="project-title">2-Watt Stereo Audio Amplifier PCB</h3>
+          <p class="project-tagline">CMPE 110 · Full PCB lifecycle, from LTSpice to a soldered board</p>
+        </div>
+        <div class="tag-row">
+          <span class="tag">KiCad</span>
+          <span class="tag">LTSpice</span>
+          <span class="tag">LM386</span>
+          <span class="tag">Team of 3</span>
+        </div>
+      </div>
+      <div class="project-body">
+        <p>Designed, simulated, and manufactured a two-channel audio amplifier PCB built around the LM386 low-voltage op-amp, taking it from a theoretical circuit to a working, soldered board with measured output.</p>
+        <table class="spec-table">
+          <tr><td>Role</td><td>Circuit design, schematic capture, layout, and assembly (team of 3, with Alex Chavez and Zemarai Rokai)</td></tr>
+          <tr><td>Stack</td><td>LTSpice simulation → KiCad schematic capture → footprint assignment → PCB layout &amp; routing → Gerber/BOM export</td></tr>
+          <tr><td>Verification</td><td>Electrical Rules Check (0 errors/warnings), Gerber viewer inspection, oscilloscope waveform capture at 15/20/25 kHz</td></tr>
+        </table>
+        <div class="outcome-strip">
+          <span class="outcome-pill">✓ Amplified audio output confirmed on both channels</span>
+          <span class="outcome-pill">✓ Clean 0-error schematic &amp; DRC pass</span>
+          <span class="outcome-pill warn">⚠ Learned layer/via management the hard way</span>
+        </div>
+        <button class="toggle-btn" data-target="d1">See the full process</button>
+        <div class="details" id="d1">
+          <h4>Design &amp; Simulation</h4>
+          <ul>
+            <li>Built the LM386-based gain stage in LTSpice with a potentiometer acting as a volume control, verifying clean amplification with no clipping before touching KiCad.</li>
+          </ul>
+          <h4>Schematic Capture</h4>
+          <ul>
+            <li>Selected 470 µF filtering caps and 0.047 µF bypass caps based on datasheet values to keep the signal clean.</li>
+            <li>Resolved initial pin conflicts to bring the Electrical Rules Check down to 0 errors and 0 warnings.</li>
+          </ul>
+          <h4>Footprint Assignment &amp; Layout</h4>
+          <ul>
+            <li>Matched DIP-8 through-hole footprints to the LM386 and radial capacitor footprints to measured part diameters.</li>
+            <li>Untangled a messy initial "rat's nest" placement and learned when to use vias to jump between top and bottom copper layers — the most challenging part of the project as a team new to two-layer boards.</li>
+          </ul>
+          <h4>Manufacturing &amp; Assembly</h4>
+          <ul>
+            <li>Generated Gerber, drill, and BOM files, then inspected them in GerbView before submission.</li>
+            <li>Hit real-world soldering issues — bridged and cold joints requiring rework — which stressed some pads, a hands-on lesson that a good design file is only half the battle.</li>
+            <li>Verified power delivery via the onboard LED, then confirmed amplified audio output by ear and on an oscilloscope across multiple frequencies.</li>
+          </ul>
+          <h4>Build Gallery</h4>
+          <div class="gallery" data-gallery="cmpe110">
+            <figure data-img="images/cmpe110/ltspice.jpg" data-cap="Figure 1 — Initial circuit simulation in LTSpice">
+              <img src="images/cmpe110/ltspice.jpg" alt="LTSpice simulation of the LM386 amplifier circuit" loading="lazy">
+              <figcaption>LTSpice simulation</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/schematic.jpg" data-cap="Figure 2 — Final KiCad schematic showing left/right channel connections">
+              <img src="images/cmpe110/schematic.jpg" alt="Final KiCad schematic of the audio amplifier" loading="lazy">
+              <figcaption>KiCad schematic</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/erc.jpg" data-cap="Figure 3 — Electrical Rules Check: 0 errors, 0 warnings">
+              <img src="images/cmpe110/erc.jpg" alt="KiCad Electrical Rules Checker showing zero errors" loading="lazy">
+              <figcaption>ERC — 0 errors</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/footprints.jpg" data-cap="Figure 4 — Footprint assignment table matching symbols to real component sizes">
+              <img src="images/cmpe110/footprints.jpg" alt="KiCad footprint assignment table" loading="lazy">
+              <figcaption>Footprint assignment</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/layout.jpg" data-cap="Figure 5 — Final board layout with all traces routed">
+              <img src="images/cmpe110/layout.jpg" alt="Final routed PCB layout" loading="lazy">
+              <figcaption>Routed PCB layout</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/render3d.jpg" data-cap="Figure 6 — 3D render verifying component placement and spacing">
+              <img src="images/cmpe110/render3d.jpg" alt="3D render of the PCB assembly" loading="lazy">
+              <figcaption>3D board render</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/pcb-front.jpg" data-cap="Front of the fabricated PCB">
+              <img src="images/cmpe110/pcb-front.jpg" alt="Front of the fabricated PCB" loading="lazy">
+              <figcaption>Fabricated PCB — front</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/pcb-back.jpg" data-cap="Back of the fabricated PCB">
+              <img src="images/cmpe110/pcb-back.jpg" alt="Back of the fabricated PCB" loading="lazy">
+              <figcaption>Fabricated PCB — back</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/soldering.jpg" data-cap="Soldering components onto the board during assembly">
+              <img src="images/cmpe110/soldering.jpg" alt="Soldering components onto the PCB" loading="lazy">
+              <figcaption>Hand-soldering assembly</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/wave-15khz.jpg" data-cap="Amplified output waveform at 15 kHz on the oscilloscope">
+              <img src="images/cmpe110/wave-15khz.jpg" alt="Oscilloscope waveform at 15kHz" loading="lazy">
+              <figcaption>Waveform — 15 kHz</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/wave-20khz.jpg" data-cap="Amplified output waveform at 20 kHz on the oscilloscope">
+              <img src="images/cmpe110/wave-20khz.jpg" alt="Oscilloscope waveform at 20kHz" loading="lazy">
+              <figcaption>Waveform — 20 kHz</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/wave-25khz.jpg" data-cap="Amplified output waveform at 25 kHz on the oscilloscope">
+              <img src="images/cmpe110/wave-25khz.jpg" alt="Oscilloscope waveform at 25kHz" loading="lazy">
+              <figcaption>Waveform — 25 kHz</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/gerber-setup.jpg" data-cap="Figure 12 — Gerber plot configuration for manufacturing file generation">
+              <img src="images/cmpe110/gerber-setup.jpg" alt="KiCad Gerber plot setup dialog" loading="lazy">
+              <figcaption>Gerber generation</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/gerber-view1.jpg" data-cap="Figure 13 — Gerber viewer inspection of copper and drill layers">
+              <img src="images/cmpe110/gerber-view1.jpg" alt="GerbView inspection of the copper layer" loading="lazy">
+              <figcaption>Gerber inspection</figcaption>
+            </figure>
+            <figure data-img="images/cmpe110/bom.jpg" data-cap="Figure 16-17 — Bill of Materials export configuration and generated parts list">
+              <img src="images/cmpe110/bom.jpg" alt="Bill of Materials configuration dialog" loading="lazy">
+              <figcaption>BOM export</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECT U2 -->
+    <div class="project">
+      <div class="project-head">
+        <div>
+          <span class="designator">U2</span>
+          <h3 class="project-title">Coin-Operated Vending Machine (FSM)</h3>
+          <p class="project-tagline">CMPE 125 · Moore machine design in Verilog on a Basys 3 FPGA</p>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Verilog</span>
+          <span class="tag">FSM Design</span>
+          <span class="tag">Basys 3</span>
+          <span class="tag">Testbench</span>
+        </div>
+      </div>
+      <div class="project-body">
+        <p>Designed a Moore-machine finite state machine that tracks inserted coins (nickels, dimes, quarters) toward a 25-cent soda, dispensing and returning correct change across 10 reachable states — implemented and verified on real FPGA hardware.</p>
+        <table class="spec-table">
+          <tr><td>Logic</td><td>10-state Moore FSM (S0–S9) tracking running coin totals in 5¢ increments, with dedicated dispense states for exact and over-payment</td></tr>
+          <tr><td>Inputs / Outputs</td><td>Debounced, edge-detected coin switches (nickel/dime/quarter) → dispense, returnNickel, returnDime, returnTwoDimes signals + 4-bit state LEDs</td></tr>
+          <tr><td>Verification</td><td>Custom testbench with binary test-vector file covering 10 payment scenarios, plus live hardware validation on the Basys 3</td></tr>
+        </table>
+        <div class="outcome-strip">
+          <span class="outcome-pill">✓ Verified correct change across all coin combinations</span>
+          <span class="outcome-pill">✓ Edge-detection logic to prevent double-counting held switches</span>
+        </div>
+        <button class="toggle-btn" data-target="d2">See the full process</button>
+        <div class="details" id="d2">
+          <h4>Clock &amp; Input Conditioning</h4>
+          <ul>
+            <li>Divided the 100 MHz Basys 3 clock down to ~100 Hz for responsive, debounced switch handling.</li>
+            <li>Implemented rising-edge detection on each coin switch so holding a switch down only registers as a single coin insertion.</li>
+          </ul>
+          <h4>FSM Design</h4>
+          <ul>
+            <li>Modeled running totals from 0¢ to 20¢ as states S0–S4, with dedicated dispense states (S5–S9) handling exact payment and every over-payment/change combination up to 45¢.</li>
+            <li>Used Moore-style outputs so dispense and return signals are driven purely by current state, holding until all coin switches are released.</li>
+          </ul>
+          <h4>Verification</h4>
+          <ul>
+            <li>Wrote a self-checking testbench that reads expected outputs from a test-vector file and flags mismatches automatically.</li>
+            <li>Covered 10 payment scenarios — from exact 5-nickel payment to 45¢ over-payment requiring two dimes back — before loading onto hardware.</li>
+            <li>Confirmed correct dispense/return behavior live on the Basys 3, matching LED indicators to expected states (e.g., quarter → immediate dispense, nickel + quarter → dispense + return nickel).</li>
+          </ul>
+          <h4>Hardware &amp; Simulation Gallery</h4>
+          <div class="gallery" data-gallery="vending">
+            <figure data-img="images/vending/state1.jpg" data-cap="State 1 — one nickel inserted (5 cents), state LEDs update accordingly">
+              <img src="images/vending/state1.jpg" alt="Basys 3 board showing State 1 after a nickel is inserted" loading="lazy">
+              <figcaption>State 1 — nickel inserted</figcaption>
+            </figure>
+            <figure data-img="images/vending/state6.jpg" data-cap="State 6 — dispense triggered with a nickel returned as change">
+              <img src="images/vending/state6.jpg" alt="Basys 3 board showing State 6, dispense plus return nickel" loading="lazy">
+              <figcaption>State 6 — dispense + return</figcaption>
+            </figure>
+            <figure data-img="images/vending/nickel-quarter.jpg" data-cap="Nickel + quarter (30 cents) — dispense with nickel returned as excess change">
+              <img src="images/vending/nickel-quarter.jpg" alt="Basys 3 board after nickel plus quarter insertion, dispensing with return nickel" loading="lazy">
+              <figcaption>Nickel + quarter → dispense</figcaption>
+            </figure>
+            <figure data-img="images/vending/state5.jpg" data-cap="State 5 — a single quarter inserted, exact payment, dispense only">
+              <img src="images/vending/state5.jpg" alt="Basys 3 board showing State 5, dispense after a quarter" loading="lazy">
+              <figcaption>State 5 — quarter → dispense</figcaption>
+            </figure>
+            <figure data-img="images/vending/waveform.jpg" data-cap="Testbench simulation waveform confirming dispense/return timing against expected test vectors">
+              <img src="images/vending/waveform.jpg" alt="Simulation waveform from the vending machine testbench" loading="lazy">
+              <figcaption>Testbench waveform</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECT U3 -->
+    <div class="project">
+      <div class="project-head">
+        <div>
+          <span class="designator">U3</span>
+          <h3 class="project-title">SplitSeez — Receipt-Splitting Web App</h3>
+          <p class="project-tagline">Team capstone-style project · QA Engineer</p>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Node.js</span>
+          <span class="tag">React</span>
+          <span class="tag">MongoDB</span>
+          <span class="tag">OCR</span>
+          <span class="tag">Team of 6</span>
+        </div>
+      </div>
+      <div class="project-body">
+        <p>A full-stack application that scans a restaurant receipt with OCR and automatically splits the bill across a group — by item or by percentage. I served as a QA Engineer on a 6-person team, designing and running the test plan that shaped the final bug list going into demo.</p>
+        <table class="spec-table">
+          <tr><td>Role</td><td>Quality Assurance Engineer (with Sakina Rahman), alongside PM, product marketing, system architecture, and development leads</td></tr>
+          <tr><td>Stack</td><td>React frontend, Node.js/Express backend, MongoDB (Mongoose) storage, Tesseract OCR for receipt scanning, JWT-based auth middleware</td></tr>
+          <tr><td>Scope</td><td>User accounts, group/event management, itemized &amp; percentage-based bill splitting, sub-5-second response time target, 2–10+ person groups</td></tr>
+        </table>
+        <div class="outcome-strip">
+          <span class="outcome-pill">✓ Verified bill-splitting math for both item and percentage modes</span>
+          <span class="outcome-pill">✓ Found &amp; tracked 5 high-severity bugs pre-demo</span>
+          <span class="outcome-pill warn">⚠ Two known issues shipped open (event participant removal)</span>
+        </div>
+        <button class="toggle-btn" data-target="d3">See the full process</button>
+        <div class="details" id="d3">
+          <h4>Testing Approach</h4>
+          <ul>
+            <li>Ran primarily manual testing across core features: registration, duplicate-email handling, concurrent login, event membership, and both bill-splitting modes.</li>
+            <li>Logged results in a structured pass/fail matrix with reproduction notes for every failure.</li>
+          </ul>
+          <h4>Bugs Found &amp; Resolution</h4>
+          <ul>
+            <li>Identified a high-severity CORS misconfiguration that blocked the frontend from reaching backend endpoints entirely — fixed by adding proper CORS headers.</li>
+            <li>Caught missing validation on itemized splits (no way to delete a line item) and on percentage splits (totals not required to sum to 100%) — both patched before demo.</li>
+            <li>Flagged an "owed amount not updating" bug traced to the participating-events fetch, fixed by correcting the response payload.</li>
+            <li>Two issues — participant removal not syncing to receipt data, and duplicate active logins — remained open at demo time and were documented as known limitations.</li>
+          </ul>
+          <h4>Lessons Learned</h4>
+          <ul>
+            <li>Small bugs (like a missing CORS header) revealed larger architectural gaps, which pushed the team toward separating receipt and event data more cleanly.</li>
+            <li>OCR accuracy and remote team coordination across schedules were the two biggest recurring challenges.</li>
+          </ul>
+          <h4>App Gallery</h4>
+          <div class="gallery gallery-wide" data-gallery="splitseez">
+            <figure data-img="images/splitseez/login.jpg" data-cap="Login page — user account authentication">
+              <img src="images/splitseez/login.jpg" alt="SplitSeez login page screenshot" loading="lazy">
+              <figcaption>Login page</figcaption>
+            </figure>
+            <figure data-img="images/splitseez/add-event.jpg" data-cap="Add Event page — creating a new group event to split a bill">
+              <img src="images/splitseez/add-event.jpg" alt="SplitSeez add event page screenshot" loading="lazy">
+              <figcaption>Add Event page</figcaption>
+            </figure>
+            <figure data-img="images/splitseez/flowchart.jpg" data-cap="System overview flowchart — Node.js/Express backend, React frontend, MongoDB, and Tesseract OCR">
+              <img src="images/splitseez/flowchart.jpg" alt="SplitSeez system architecture flowchart" loading="lazy">
+              <figcaption>System architecture</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="sec-tag">// 03 — Background</p>
+      <h2 class="sec-title">About</h2>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p>I'm a Computer Engineering student at San José State University, focused on the hardware side of the stack — FPGA development, embedded systems, and PCB design. I like projects that don't stop at a schematic: simulating in LTSpice, writing the RTL, and following it all the way to a board I've routed, fabricated, and soldered myself.</p>
+        <p>Outside coursework, I'm building toward hardware engineering internships — currently deepening my RTL skills with structured Basys 3 projects and learning KiCad PCB design from the ground up through a sensor-board build.</p>
+      </div>
+      <div>
+        <div class="coursework">
+          <div class="course"><div class="code">CMPE 110</div><div class="name">PCB Design &amp; Manufacturing</div></div>
+          <div class="course"><div class="code">CMPE 125</div><div class="name">Digital Systems / Verilog</div></div>
+          <div class="course"><div class="code">CMPE 127</div><div class="name">Microprocessor Design / Assembly</div></div>
+          <div class="course"><div class="code">CMPE 152</div><div class="name">Compiler Design</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-box">
+      <div>
+        <h2>Let's build something.</h2>
+        <p>Open to hardware engineering internships and collaborative projects.</p>
+      </div>
+      <div class="contact-links">
+        <a href="mailto:youremail@example.com" class="btn btn-primary">Email Me</a>
+        <a href="https://github.com/yourusername" class="btn btn-ghost">GitHub</a>
+        <a href="https://linkedin.com/in/yourusername" class="btn btn-ghost">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>DESIGNED &amp; BUILT BY OSCAR ARROYO — REV. 1.0</p>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+  <img id="lbImg" src="" alt="">
+  <p class="lb-cap" id="lbCap"></p>
+</div>
+
+<script>
+  document.getElementById('navToggle').addEventListener('click', function(){
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+  document.querySelectorAll('.navlinks a').forEach(function(a){
+    a.addEventListener('click', function(){
+      document.getElementById('navLinks').classList.remove('open');
+    });
+  });
+  document.querySelectorAll('.toggle-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = document.getElementById(btn.dataset.target);
+      target.classList.toggle('open');
+      btn.classList.toggle('open');
+      btn.firstChild.textContent = target.classList.contains('open') ? 'Hide the full process' : 'See the full process';
+    });
+  });
+
+  // Lightbox
+  var lightbox = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lbImg');
+  var lbCap = document.getElementById('lbCap');
+  document.querySelectorAll('.gallery figure').forEach(function(fig){
+    fig.addEventListener('click', function(){
+      lbImg.src = fig.dataset.img;
+      lbImg.alt = fig.querySelector('img').alt;
+      lbCap.textContent = fig.dataset.cap || '';
+      lightbox.classList.add('open');
+    });
+  });
+  function closeLightbox(){ lightbox.classList.remove('open'); lbImg.src=''; }
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function(e){ if(e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLightbox(); });
+</script>
+
+</body>
+</html>
