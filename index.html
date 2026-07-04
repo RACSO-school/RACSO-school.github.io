@@ -737,6 +737,76 @@
       </div>
     </div>
 
+    <!-- PROJECT U4 -->
+    <div class="project">
+      <div class="project-head">
+        <div>
+          <span class="designator">U4</span>
+          <h3 class="project-title">32-Bit ALU Design (MIPS-Style)</h3>
+          <p class="project-tagline">CMPE 125 · A core building block of a simple CPU datapath</p>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Verilog</span>
+          <span class="tag">Quartus</span>
+          <span class="tag">ModelSim</span>
+          <span class="tag">Boolean Logic</span>
+        </div>
+      </div>
+      <div class="project-body">
+        <p>Designed a 32-bit Arithmetic Logic Unit in Verilog modeling the core operations found in a MIPS datapath — AND, OR, ADD, SUB, and set-less-than — then extended the base design with hand-derived Overflow and Zero status flags.</p>
+        <table class="spec-table">
+          <tr><td>Operations</td><td>AND, OR, ADD, SUB, SLT — selected via a 3-bit function code, reusing the same adder hardware for both addition and subtraction by inverting B and setting Cin</td></tr>
+          <tr><td>Overflow Logic</td><td>Hand-derived Boolean equation flagging signed overflow whenever two same-signed operands produce a result of the opposite sign</td></tr>
+          <tr><td>Verification</td><td>Simulated in ModelSim against a custom test vector set, checking corner cases across all five operations before finalizing</td></tr>
+        </table>
+        <div class="outcome-strip">
+          <span class="outcome-pill">✓ One adder reused for both add &amp; subtract via B-invert/Cin</span>
+          <span class="outcome-pill">✓ Overflow &amp; Zero flags derived from first principles</span>
+        </div>
+        <button class="toggle-btn" data-target="d4">See the full process</button>
+        <div class="details" id="d4">
+          <h4>Control Table &amp; Operation Design</h4>
+          <ul>
+            <li>Built a control table mapping the 3-bit function select (F[2:0]) to each operation, defining when B is inverted and when Cin is set so subtraction reuses the exact same adder as addition.</li>
+          </ul>
+          <h4>Overflow &amp; Zero Detection</h4>
+          <ul>
+            <li>Derived the Boolean overflow equation by hand: signed overflow occurs when two operands of the same sign produce a result of the opposite sign.</li>
+            <li>Added a Zero flag that asserts whenever the ALU output equals 32'b0, and wired SLT to resolve from the sign and overflow bits of the internal subtraction.</li>
+          </ul>
+          <h4>Verilog Implementation &amp; Simulation</h4>
+          <ul>
+            <li>Implemented the 32-bit ALU in Quartus and built a self-checking testbench.</li>
+            <li>Simulated in ModelSim, verifying corner cases across all five operations — including overflow-triggering edge cases — before signing off on the design.</li>
+          </ul>
+          <h4>Reflection</h4>
+          <ul>
+            <li>This lab gave hands-on experience using the same adder hardware to perform both addition and subtraction, by inverting B and setting Cin = 1.</li>
+            <li>Overflow detection came down to one core idea: checking whether two same-signed inputs produce a result with a different sign.</li>
+          </ul>
+          <h4>Design Notes</h4>
+          <div class="gallery" data-gallery="alu">
+            <figure data-img="images/alu/alu-schematic.jpg" data-cap="N-bit ALU block diagram — the design target for this lab, built around a shared adder core">
+              <img src="images/alu/alu-schematic.jpg" alt="N-bit ALU block diagram" loading="lazy">
+              <figcaption>ALU block diagram</figcaption>
+            </figure>
+            <figure data-img="images/alu/truth-table.jpg" data-cap="Control table mapping the function select bits to AND/OR/ADD/SUB/SLT, B-invert, and Cin">
+              <img src="images/alu/truth-table.jpg" alt="ALU control truth table" loading="lazy">
+              <figcaption>Operation control table</figcaption>
+            </figure>
+            <figure data-img="images/alu/overflow-derivation.jpg" data-cap="Hand-derived Boolean overflow equation, plus Zero and SLT logic">
+              <img src="images/alu/overflow-derivation.jpg" alt="Hand-derived overflow equation notes" loading="lazy">
+              <figcaption>Overflow derivation</figcaption>
+            </figure>
+            <figure data-img="images/alu/reflection.jpg" data-cap="Lab reflection on shared adder hardware and overflow detection">
+              <img src="images/alu/reflection.jpg" alt="Handwritten lab reflection notes" loading="lazy">
+              <figcaption>Lab reflection</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
